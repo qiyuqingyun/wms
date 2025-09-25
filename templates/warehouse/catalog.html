@@ -1,0 +1,42 @@
+﻿{% extends 'base.html' %}
+{% block title %}物品分类浏览{% endblock %}
+{% block content %}
+<h1>物品分类浏览</h1>
+<p class="muted">滑动或滚轮浏览各分类中的商品，当前聚焦的商品会放大显示。</p>
+{% for category in categories %}
+<section class="category-block">
+  <div class="category-header">
+    <h2>{{ category.name }}</h2>
+    {% if category.description %}<p class="muted">{{ category.description }}</p>{% endif %}
+  </div>
+  {% if category.items.all %}
+  <div class="carousel" data-carousel>
+    <button class="carousel-btn prev" data-carousel-prev>&lt;</button>
+    <div class="carousel-track" data-carousel-track>
+      {% for item in category.items.all %}
+      <div class="carousel-slide">
+        {% with image=item.images.first %}
+        {% if image %}
+        <img src="{{ image.image.url }}" alt="{{ image.alt|default:item.name }}" />
+        {% else %}
+        <div class="carousel-placeholder">{{ item.name|first }}</div>
+        {% endif %}
+        {% endwith %}
+        <div class="carousel-caption">
+          <strong>{{ item.name }}</strong>
+          <span>SKU：{{ item.sku_code }}</span>
+          {% if item.size_text %}<span>规格：{{ item.size_text }}</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="carousel-btn next" data-carousel-next>&gt;</button>
+  </div>
+  {% else %}
+  <p>暂无商品</p>
+  {% endif %}
+</section>
+{% empty %}
+<p>还没有配置分类，请在管理后台新增分类并关联商品。</p>
+{% endfor %}
+{% endblock %}

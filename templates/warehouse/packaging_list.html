@@ -1,0 +1,33 @@
+﻿{% extends 'base.html' %}
+{% block title %}包装维护{% endblock %}
+{% block content %}
+<h1>包装信息维护</h1>
+<form method="get" class="form-inline">
+  <input type="text" name="q" value="{{ keyword }}" placeholder="搜索名称或 SKU" />
+  <select name="category">
+    <option value="">全部分类</option>
+    {% for cat in categories %}
+    <option value="{{ cat.slug }}" {% if cat.slug == active_category %}selected{% endif %}>{{ cat.name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">筛选</button>
+</form>
+
+<table class="table">
+  <tr><th>商品</th><th>SKU</th><th>分类</th><th>包装规格</th><th>单位</th><th>单件体积</th><th>状态</th><th>操作</th></tr>
+  {% for item in items %}
+  <tr>
+    <td>{{ item.name }}</td>
+    <td>{{ item.sku_code }}</td>
+    <td>{{ item.category.name|default:'-' }}</td>
+    <td>{{ item.size_text|default:'-' }}</td>
+    <td>{{ item.unit }}</td>
+    <td>{{ item.packaging_volume }}</td>
+    <td>{% if item.active %}启用{% else %}停用{% endif %}</td>
+    <td><a href="{% url 'warehouse:packaging_update' item.pk %}">编辑</a></td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="8">暂无商品</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

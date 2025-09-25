@@ -1,0 +1,13 @@
+﻿{% extends 'base.html' %}
+{% block title %}入库{% endblock %}
+{% block content %}
+<h1>入库</h1>
+<form method="post">
+  {% csrf_token %}
+  <div class="form-grid">
+    {{ form.as_p }}
+  </div>
+  <button type="submit">提交入库</button>
+  <p class="muted">如优先货位容量不足，系统会自动尝试分配到其他货位。</p>
+</form>
+{% endblock %}

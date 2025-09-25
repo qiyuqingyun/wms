@@ -1,0 +1,49 @@
+﻿{% extends 'base.html' %}
+{% block title %}扫码/查询{% endblock %}
+{% block content %}
+<h1>扫码/查询</h1>
+<form method="get" class="form-inline">
+  {{ form.code.label_tag }} {{ form.code }}
+  <button type="submit">查询</button>
+  <small>{{ form.code.help_text }}</small>
+</form>
+
+{% if item %}
+  <h2>商品：{{ item.name }} ({{ item.sku_code }})</h2>
+  {% include 'warehouse/snippets/item_carousel.html' with item=item %}
+  <p>规格：{{ item.size_text|default:'-' }} | 单位：{{ item.unit }} | 单件体积：{{ item.packaging_volume }}</p>
+  {% if can_edit_packaging %}
+    <p><a href="{% url 'warehouse:packaging_update' item.id %}">维护包装信息</a></p>
+  {% endif %}
+  <p><a href="/inbound/?item={{ item.id }}">入库此商品</a></p>
+  {% if batches %}
+    <h3>批次列表</h3>
+    <table class="table">
+      <tr><th>批次</th><th>条码</th><th>生产</th><th>过期</th><th>数量</th><th>操作</th></tr>
+      {% for b in batches %}
+      <tr>
+        <td>{{ b.batch_number }}</td>
+        <td>{{ b.barcode }}</td>
+        <td>{{ b.production_date|default:'-' }}</td>
+        <td>{{ b.expiry_date|default:'-' }}</td>
+        <td>{{ b.quantity_units }}</td>
+        <td>
+          <a href="/inbound/?batch={{ b.id }}">入库</a> |
+          <a href="/outbound/?batch={{ b.id }}">出库</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+{% elif batch %}
+  <h2>批次：{{ batch.batch_number }} ({{ batch.barcode }})</h2>
+  <p>商品：{{ batch.item.name }} ({{ batch.item.sku_code }})</p>
+  {% include 'warehouse/snippets/item_carousel.html' with item=batch.item %}
+  <p>生产：{{ batch.production_date|default:'-' }} | 过期：{{ batch.expiry_date|default:'-' }}</p>
+  <p>库存：{{ batch.quantity_units }}</p>
+  <p>
+    <a href="/inbound/?batch={{ batch.id }}">入库</a> |
+    <a href="/outbound/?batch={{ batch.id }}">出库</a>
+  </p>
+{% endif %}
+{% endblock %}

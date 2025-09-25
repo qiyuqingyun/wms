@@ -1,0 +1,12 @@
+﻿{% extends 'base.html' %}
+{% block title %}编辑 {{ item.name }}{% endblock %}
+{% block content %}
+<h1>{{ item.name }} - 包装维护</h1>
+<p class="muted">用于更新包装规格、体积、保质期标记等信息。</p>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">保存</button>
+  <a class="btn-secondary" href="{% url 'warehouse:packaging_list' %}">返回列表</a>
+</form>
+{% endblock %}

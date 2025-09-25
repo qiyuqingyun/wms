@@ -1,0 +1,19 @@
+﻿{% if item.images.all %}
+<div class="carousel" data-carousel>
+  <button class="carousel-btn prev" data-carousel-prev>&lt;</button>
+  <div class="carousel-track" data-carousel-track>
+    {% for img in item.images.all %}
+    <div class="carousel-slide">
+      <img src="{{ img.image.url }}" alt="{{ img.alt|default:item.name }}" />
+      <div class="carousel-caption">
+        <strong>{{ item.name }}</strong>
+        <span>SKU：{{ item.sku_code }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <button class="carousel-btn next" data-carousel-next>&gt;</button>
+</div>
+{% else %}
+<p>暂无图片</p>
+{% endif %}

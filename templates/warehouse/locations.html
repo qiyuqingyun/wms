@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}货位管理{% endblock %}
+{% block content %}
+<h1>货位</h1>
+<p><a href="/locations/new/">新增货位</a></p>
+<table class="table">
+  <tr><th>编码</th><th>名称</th><th>容量</th><th>已用体积</th><th>可用体积</th><th>备注</th></tr>
+  {% for loc in locations %}
+  <tr>
+    <td>{{ loc.code }}</td>
+    <td>{{ loc.name }}</td>
+    <td>{{ loc.capacity_volume }}</td>
+    <td>{{ loc.used_volume|floatformat:2 }}</td>
+    <td>{{ loc.available_volume|floatformat:2 }}</td>
+    <td>{{ loc.note }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="6">暂无货位</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
+

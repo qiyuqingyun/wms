@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}高频进出{% endblock %}
+{% block content %}
+<h1>高频进出商品</h1>
+<table class="table">
+  <tr><th>商品</th><th>SKU</th><th>进出次数</th></tr>
+  {% for row in popular %}
+  <tr>
+    <td>{{ row.batch__item__name }}</td>
+    <td>{{ row.batch__item__sku_code }}</td>
+    <td>{{ row.moves }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="3">暂无数据</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
+

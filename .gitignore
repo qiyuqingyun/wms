@@ -1,0 +1,30 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments & local config
+venv/
+.env
+.env.*
+*.env
+
+# Django / project generated assets
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# IDE and editor folders
+.idea/
+.vscode/
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Local scripts not meant for version control
+scripts/mysql_local.py
+scripts/__pycache__/

@@ -1,0 +1,55 @@
+﻿{% extends 'base.html' %}
+{% block title %}库存总览{% endblock %}
+{% block content %}
+<h1>库存总览</h1>
+<p class="muted">统计全部批次库存，包含各货位分布与临期数量，截止日期 {{ threshold }}。</p>
+<table class="table table-inventory">
+  <tr>
+    <th>商品</th>
+    <th>SKU</th>
+    <th>分类</th>
+    <th>规格/单位</th>
+    <th>批次数</th>
+    <th>库存数量</th>
+    <th>临期数量</th>
+    <th>货位分布</th>
+  </tr>
+  {% for row in inventory_rows %}
+  <tr>
+    <td>{{ row.item__name }}</td>
+    <td>{{ row.item__sku_code }}</td>
+    <td>{{ row.item__category__name|default:'-' }}</td>
+    <td>{{ row.item__size_text|default:'-' }} / {{ row.item__unit }}</td>
+    <td>{{ row.batch_count }}</td>
+    <td>{{ row.total_units }}</td>
+    <td class="{% if row.near_expiry_units %}warn{% endif %}">{{ row.near_expiry_units }}</td>
+    <td>
+      {% if row.locations %}
+        {% for loc in row.locations %}
+          <span class="tag">{{ loc.location__code }}（{{ loc.units }}）</span>
+        {% endfor %}
+      {% else %}
+        <span class="muted">未分配货位</span>
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="8">暂无库存数据</td></tr>
+  {% endfor %}
+</table>
+
+<h2>临期批次</h2>
+<table class="table">
+  <tr><th>商品</th><th>批次号</th><th>过期日期</th><th>数量</th></tr>
+  {% for batch in near_expiry_batches %}
+  <tr>
+    <td>{{ batch.item.name }}</td>
+    <td>{{ batch.batch_number }}</td>
+    <td>{{ batch.expiry_date }}</td>
+    <td>{{ batch.quantity_units }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="4">暂无临期批次</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
