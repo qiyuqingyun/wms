@@ -1,33 +1,44 @@
-﻿<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}仓库管理系统{% endblock %}</title>
-  <link rel="stylesheet" href="/static/css/site.css" />
-  <link rel="stylesheet" href="/static/css/carousel.css" />
-</head>
-<body>
-  <nav class="nav">
-    <a href="/">首页</a>
-    <a href="/catalog/">物品分类</a>
-    <a href="/scan/">扫码/查询</a>
-    <a href="/inbound/">入库</a>
-    <a href="/outbound/">出库</a>
-    <a href="/inventory/">库存</a>
-    <a href="/near-expiry/">临期</a>
-    <a href="/popular/">高频</a>
-    <a href="/locations/">货位</a>
-    {% if perms.warehouse.view_item %}<a href="/packaging/">包装维护</a>{% endif %}
-    <span class="nav-right">{% if request.user.is_authenticated %}{{ request.user.username }} | <a href="/admin/">Admin</a>{% endif %}</span>
-  </nav>
-  <main class="container">
-    {% for message in messages %}
-      <div class="msg {{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-    {% block content %}{% endblock %}
-  </main>
-  <script src="/static/js/carousel.js"></script>
-  {% block scripts %}{% endblock %}
-</body>
-</html>
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}仓库管理系统{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/site.css" />
+  <link rel="stylesheet" href="/static/css/carousel.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a href="/">首页</a>
+    <a href="/catalog/">物品分类</a>
+    <a href="/scan/">扫码/查询</a>
+    <a href="/inbound/">入库</a>
+    <a href="/outbound/">出库</a>
+    <a href="/inventory/">库存</a>
+    <a href="/near-expiry/">临期</a>
+    <a href="/popular/">高频</a>
+    <a href="/locations/">货位</a>
+    {% if perms.warehouse.view_item %}<a href="/packaging/">包装维护</a>{% endif %}
+    <div class="nav-right">
+      {% if request.user.is_authenticated %}
+        <span class="nav-user">{{ request.user.username }}</span>
+        <a href="/admin/">Admin</a>
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button type="submit" title="退出登录">退出</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">登录</a>
+      {% endif %}
+    </div>
+  </nav>
+  <main class="container">
+    {% for message in messages %}
+      <div class="msg {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  <script src="/static/js/carousel.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
