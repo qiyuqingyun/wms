@@ -56,6 +56,15 @@ class OutboundForm(forms.Form):
     )
     note = forms.CharField(max_length=255, required=False, label='备注')
 
+    def clean(self):
+        cleaned = super().clean()
+        batch = cleaned.get('batch')
+        qty = cleaned.get('quantity_units')
+        if batch is not None and qty is not None and qty > batch.quantity_units:
+            from django.core.exceptions import ValidationError
+            raise ValidationError('出库数量超过现有库存')
+        return cleaned
+
 
 class LocationForm(forms.ModelForm):
     class Meta:

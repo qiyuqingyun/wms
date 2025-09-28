@@ -3,9 +3,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, TYPE_CHECKING
 
 from .models import BatchLocation, ItemBatch, Location
+
+if TYPE_CHECKING:
+    from .models import Item
 
 
 @dataclass
@@ -72,8 +75,10 @@ def allocate_inbound(batch: ItemBatch, quantity: int, preferred: Optional[Locati
 def release_outbound(batch: ItemBatch, quantity: int, preferred: Optional[Location] = None) -> DeallocationResult:
     """Release stock for outbound movement, favouring preferred location first."""
     units = max(0, int(quantity))
-    if units == 0 or batch.quantity_units == 0:
+    if units == 0:
         return DeallocationResult(0, [])
+    if units > batch.quantity_units:
+        raise ValueError('Not enough stock for outbound')
 
     target = min(units, batch.quantity_units)
     assignments: List[Tuple[Location, int]] = []
@@ -112,3 +117,17 @@ def release_outbound(batch: ItemBatch, quantity: int, preferred: Optional[Locati
         batch.save(update_fields=['quantity_units', 'updated_at'])
 
     return DeallocationResult(removed_units=removed, assignments=assignments)
+
+
+def max_placeable_units(item: 'Item', preferred: Optional[Location] = None) -> int:
+    per_unit = item.packaging_volume or Decimal('0')
+    if per_unit <= 0:
+        return 1000000000
+    total = 0
+    for loc in _iter_candidate_locations(preferred):
+        avail = Decimal(str(loc.available_volume))
+        if avail <= 0:
+            continue
+        total += int(avail // per_unit)
+    return total
+

@@ -1,4 +1,4 @@
-﻿from django.contrib import messages
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
 from django.db.models import Count, Prefetch, Q, Sum
@@ -13,7 +13,7 @@ from .forms import (
     ScanForm,
 )
 from .models import BatchLocation, Category, Item, ItemBatch, Location, Movement
-from .services import allocate_inbound, release_outbound
+from .services import allocate_inbound, release_outbound, max_placeable_units
 
 
 @login_required
@@ -108,8 +108,12 @@ def inbound_view(request):
                     # 保留原有生产/过期日期，仅同步条码信息
                     batch.barcode = form.cleaned_data['barcode']
                     batch.save(update_fields=['barcode', 'updated_at'])
-
-            qty = form.cleaned_data['quantity_units']
+            qty = int(form.cleaned_data['quantity_units'])
+            fit_total = max_placeable_units(batch.item, preferred=location)
+            if qty > fit_total:
+                unit_name = batch.item.unit or '件'
+                messages.error(request, f'货位容量不足，最多还能放置 {fit_total}{unit_name}，请调整数量或增加货位容量')
+                return render(request, 'warehouse/inbound.html', {'form': form})
             allocation = allocate_inbound(batch, qty, preferred=location)
             Movement.objects.create(
                 batch=batch,
@@ -159,29 +163,33 @@ def outbound_view(request):
         form = OutboundForm(request.POST)
         if form.is_valid():
             batch = form.cleaned_data['batch']
-            qty = form.cleaned_data['quantity_units']
+            qty = int(form.cleaned_data['quantity_units'])
             location = form.cleaned_data.get('location')
             if qty > batch.quantity_units:
-                messages.error(request, '出库数量超过库存')
+                messages.error(request, '出库数量超过现有库存')
             else:
-                result = release_outbound(batch, qty, preferred=location)
-                Movement.objects.create(
-                    batch=batch,
-                    direction=Movement.Direction.OUT,
-                    quantity_units=qty,
-                    user=request.user,
-                    location=location,
-                    note=form.cleaned_data.get('note', ''),
-                )
-                unit_name = batch.item.unit or '件'
-                if result.assignments:
-                    removed_text = '，'.join(f"{loc.code}:{units}{unit_name}" for loc, units in result.assignments)
-                    messages.info(request, f'已从货位扣减：{removed_text}')
-                if result.removed_units < qty:
-                    diff = qty - result.removed_units
-                    messages.warning(request, f'仍有 {diff}{unit_name}库存未找到对应货位，请稍后核实')
-                messages.success(request, '出库成功')
-                return redirect('warehouse:scan')
+                try:
+                    result = release_outbound(batch, qty, preferred=location)
+                except ValueError:
+                    messages.error(request, '出库数量超过现有库存')
+                else:
+                    Movement.objects.create(
+                        batch=batch,
+                        direction=Movement.Direction.OUT,
+                        quantity_units=qty,
+                        user=request.user,
+                        location=location,
+                        note=form.cleaned_data.get('note', ''),
+                    )
+                    unit_name = batch.item.unit or '件'
+                    if result.assignments:
+                        removed_text = '，'.join(f"{loc.code}:{units}{unit_name}" for loc, units in result.assignments)
+                        messages.info(request, f'已从货位扣减：{removed_text}')
+                    if result.removed_units < qty:
+                        diff = qty - result.removed_units
+                        messages.warning(request, f'仍有 {diff}{unit_name}库存未找到对应货位，请稍后核实')
+                    messages.success(request, '出库成功')
+                    return redirect('warehouse:scan')
     else:
         initial: dict[str, object] = {}
         batch_id = request.GET.get('batch')
@@ -339,7 +347,3 @@ def item_packaging_update(request, pk: int):
     else:
         form = ItemPackagingForm(instance=item)
     return render(request, 'warehouse/packaging_form.html', {'form': form, 'item': item})
-
-
-
-
