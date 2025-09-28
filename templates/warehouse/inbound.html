@@ -8,6 +8,9 @@
     {{ form.as_p }}
   </div>
   <button type="submit">提交入库</button>
-  <p class="muted">如优先货位容量不足，系统会自动尝试分配到其他货位。</p>
+  {% if form.lock_dates %}
+    <p class="muted">该批次的生产/过期日期已锁定，如需调整请到批次信息中更正。</p>
+  {% endif %}
+  <p class="muted">若优先货位空间不足，系统会自动将剩余数量分配到其它货位。</p>
 </form>
 {% endblock %}

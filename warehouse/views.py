@@ -84,7 +84,8 @@ def scan_view(request):
 @transaction.atomic
 def inbound_view(request):
     if request.method == 'POST':
-        form = InboundForm(request.POST)
+        lock_dates = bool(request.POST.get('batch_id'))
+        form = InboundForm(request.POST, lock_dates=lock_dates)
         if form.is_valid():
             batch_id = form.cleaned_data.get('batch_id')
             item_id = form.cleaned_data.get('item_id')
@@ -104,10 +105,9 @@ def inbound_view(request):
                     },
                 )
                 if not created:
-                    batch.production_date = form.cleaned_data.get('production_date')
-                    batch.expiry_date = form.cleaned_data.get('expiry_date')
+                    # 保留原有生产/过期日期，仅同步条码信息
                     batch.barcode = form.cleaned_data['barcode']
-                    batch.save()
+                    batch.save(update_fields=['barcode', 'updated_at'])
 
             qty = form.cleaned_data['quantity_units']
             allocation = allocate_inbound(batch, qty, preferred=location)
@@ -129,6 +129,7 @@ def inbound_view(request):
             return redirect('warehouse:scan')
     else:
         initial: dict[str, object] = {}
+        lock_dates = False
         if 'batch' in request.GET:
             batch = get_object_or_404(ItemBatch, id=request.GET['batch'])
             initial.update(
@@ -141,10 +142,11 @@ def inbound_view(request):
                     'barcode': batch.barcode,
                 }
             )
+            lock_dates = True
         elif 'item' in request.GET:
             item = get_object_or_404(Item, id=request.GET['item'])
             initial['item_id'] = item.id
-        form = InboundForm(initial=initial)
+        form = InboundForm(initial=initial, lock_dates=lock_dates)
     return render(request, 'warehouse/inbound.html', {'form': form})
 
 
@@ -336,3 +338,5 @@ def item_packaging_update(request, pk: int):
     else:
         form = ItemPackagingForm(instance=item)
     return render(request, 'warehouse/packaging_form.html', {'form': form, 'item': item})
+
+
