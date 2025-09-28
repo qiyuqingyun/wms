@@ -15,6 +15,7 @@ class ScanForm(forms.Form):
 class InboundForm(forms.Form):
     batch_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
     item_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
+    item = forms.ModelChoiceField(queryset=Item.objects.select_related('category').order_by('name'), required=False, label='商品')
     batch_number = forms.CharField(max_length=100, label='批次号')
     production_date = forms.DateField(
         label='生产日期',
@@ -30,12 +31,15 @@ class InboundForm(forms.Form):
     quantity_units = forms.IntegerField(min_value=1, label='数量')
     location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False, label='优先货位')
 
-    def __init__(self, *args, lock_dates: bool = False, **kwargs):
+    def __init__(self, *args, lock_dates: bool = False, lock_item: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self.lock_dates = lock_dates
+        self.lock_item = lock_item
         if lock_dates:
             self.fields['production_date'].disabled = True
             self.fields['expiry_date'].disabled = True
+        if lock_item:
+            self.fields['item'].disabled = True
 
 
 class OutboundForm(forms.Form):
@@ -78,3 +82,5 @@ class ItemPackagingForm(forms.ModelForm):
         help_texts = {
             'packaging_volume': '用于计算货位占用的体积，建议填写实际体积或换算后的仓储单位。',
         }
+
+

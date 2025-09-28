@@ -85,7 +85,7 @@ def scan_view(request):
 def inbound_view(request):
     if request.method == 'POST':
         lock_dates = bool(request.POST.get('batch_id'))
-        form = InboundForm(request.POST, lock_dates=lock_dates)
+        form = InboundForm(request.POST, lock_dates=lock_dates, lock_item=bool(request.POST.get('batch_id') or request.POST.get('item_id')))
         if form.is_valid():
             batch_id = form.cleaned_data.get('batch_id')
             item_id = form.cleaned_data.get('item_id')
@@ -93,7 +93,7 @@ def inbound_view(request):
             if batch_id:
                 batch = get_object_or_404(ItemBatch, id=batch_id)
             else:
-                item = get_object_or_404(Item, id=item_id)
+                item = form.cleaned_data.get('item') or get_object_or_404(Item, id=item_id)
                 batch, created = ItemBatch.objects.get_or_create(
                     item=item,
                     batch_number=form.cleaned_data['batch_number'],
@@ -146,7 +146,8 @@ def inbound_view(request):
         elif 'item' in request.GET:
             item = get_object_or_404(Item, id=request.GET['item'])
             initial['item_id'] = item.id
-        form = InboundForm(initial=initial, lock_dates=lock_dates)
+            initial['item'] = item
+        form = InboundForm(initial=initial, lock_dates=lock_dates, lock_item=('batch' in request.GET or 'item' in request.GET))
     return render(request, 'warehouse/inbound.html', {'form': form})
 
 
@@ -338,5 +339,7 @@ def item_packaging_update(request, pk: int):
     else:
         form = ItemPackagingForm(instance=item)
     return render(request, 'warehouse/packaging_form.html', {'form': form, 'item': item})
+
+
 
 
