@@ -35,7 +35,7 @@
 
 环境准备
 --------
-1. 创建并激活 Python 环境，安装依赖（例如 `pip install django mysqlclient`）。
+1. 创建并激活 Python 环境，安装依赖（`pip install -r requirements.txt`）。
 2. 准备 MySQL 数据库并写入环境变量（PowerShell 示例）：
    ```powershell
    $env:MYSQL_DATABASE = "warehouse_db"
