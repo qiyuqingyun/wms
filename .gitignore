@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.zip
 
 # Virtual environments & local config
 venv/
