@@ -36,17 +36,13 @@
 环境准备
 --------
 1. 创建并激活 Python 环境，安装依赖（`pip install -r requirements.txt`）。
-2. 准备 MySQL 数据库并写入环境变量（PowerShell 示例）：
-   ```powershell
-   $env:MYSQL_DATABASE = "warehouse_db"
-   $env:MYSQL_USER = "root"
-   $env:MYSQL_PASSWORD = "你的密码"
-   $env:MYSQL_HOST = "127.0.0.1"
-   $env:MYSQL_PORT = "3306"
-   $env:DJANGO_DEBUG = "1"
-   ```
-
-初始化与运行
+2. 准备 MySQL 数据库并写入环境变量：
+  ```txt
+     在scripts文件夹下新建mysql_local.py文件，并把mysql_example_local.py的内容复制过来。
+     安装mysql数据库，配置其.ini文件，然后创建warehouse_db数据库。
+     在mysql_local.py文件中，正确配置数据库连接信息。
+  ```
+初始化与运行（按顺序执行）
 ------------
 1. 迁移数据：
    ```powershell
