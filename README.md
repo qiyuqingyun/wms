@@ -55,6 +55,7 @@
    ```
 3. 启动服务：
    ```powershell
+   net start mysql
    python manage.py runserver
    ```
 4. 常用入口：
@@ -68,6 +69,11 @@
    - `/popular/` 高频进出
    - `/locations/` 货位管理
    - `/packaging/` 包装维护
+5. 关闭服务：
+   ```powershell
+   command to stop Django server (Ctrl+C in terminal)
+   net stop mysql
+   ```
 
 使用要点
 --------
